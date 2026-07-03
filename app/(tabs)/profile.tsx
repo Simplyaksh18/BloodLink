@@ -805,19 +805,6 @@ export default function ProfileScreen() {
             <Text style={[styles.menuText, { color: '#E74C3C' }]}>Log Out</Text>
           </TouchableOpacity>
 
-          {__DEV__ && (
-            <>
-              <View style={[styles.menuDivider, { backgroundColor: colors.border }]} />
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => router.push('/(modals)/dev-qa')}
-              >
-                <Ionicons name="bug-outline" size={22} color="#6C3483" style={styles.menuIcon} />
-                <Text style={[styles.menuText, { color: '#6C3483' }]}>Developer QA Panel</Text>
-                <Ionicons name="chevron-forward" size={20} color={colors.muted} />
-              </TouchableOpacity>
-            </>
-          )}
         </View>
         
       </ScrollView>
