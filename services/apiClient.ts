@@ -11,7 +11,7 @@ import Constants from "expo-constants";
 //   2. expoConfig.extra.apiBaseUrl — set by app.json (also fed by EXPO_PUBLIC_API_URL).
 //   3. Legacy dev fallback   — used only for local dev when neither is set.
 //                              Logged loudly so it can't leak silently.
-const DEV_FALLBACK_URL = "https://whacky-wriggly-brunch.ngrok-free.dev/v1";
+const DEV_FALLBACK_URL = "https://bloodlink-nwtj.onrender.com/v1";
 const ENV_URL = process.env.EXPO_PUBLIC_API_URL;
 const EXTRA_URL = Constants.expoConfig?.extra?.apiBaseUrl as string | undefined;
 const API_BASE_URL = ENV_URL ?? EXTRA_URL ?? DEV_FALLBACK_URL;
@@ -19,14 +19,16 @@ const API_BASE_URL = ENV_URL ?? EXTRA_URL ?? DEV_FALLBACK_URL;
 const BUILD_PROFILE =
   (Constants.expoConfig?.extra?.eas as any)?.buildProfile ??
   (process.env.EAS_BUILD_PROFILE as string | undefined) ??
-  (__DEV__ ? 'development' : 'production');
+  (__DEV__ ? "development" : "production");
 
-console.log('[Config] API_URL:', API_BASE_URL);
-console.log('[Config] buildProfile:', BUILD_PROFILE);
-console.log('[Config] environment:', __DEV__ ? 'development' : 'production');
+console.log("[Config] API_URL:", API_BASE_URL);
+console.log("[Config] buildProfile:", BUILD_PROFILE);
+console.log("[Config] environment:", __DEV__ ? "development" : "production");
 
 if (!__DEV__ && API_BASE_URL === DEV_FALLBACK_URL) {
-  console.error('[Config] WARNING: production build fell back to dev URL. Set EXPO_PUBLIC_API_URL in eas.json.');
+  console.error(
+    "[Config] WARNING: production build fell back to dev URL. Set EXPO_PUBLIC_API_URL in eas.json.",
+  );
 }
 
 const TOKEN_KEY = "bloodlink_auth_token";
@@ -121,7 +123,9 @@ function processPending(token: string) {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -147,7 +151,8 @@ apiClient.interceptors.response.use(
           refreshToken: storedRefreshToken,
         });
 
-        const { token: newToken, refreshToken: newRefreshToken } = res.data.data;
+        const { token: newToken, refreshToken: newRefreshToken } =
+          res.data.data;
         await tokenStorage.set(newToken);
         await refreshTokenStorage.set(newRefreshToken);
 
