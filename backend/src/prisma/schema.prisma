@@ -1,0 +1,641 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+  BLOOD_BANK
+  USER
+}
+
+enum EmergencyPriority {
+  RED
+  YELLOW
+  GREEN
+}
+
+enum DonorVerificationStatus {
+  PENDING
+  ELIGIBLE
+  UNDER_REVIEW
+  NOT_ELIGIBLE
+}
+
+enum RequestVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RequestStatus {
+  OPEN        // legacy — kept for backward compat with existing records
+  ACTIVE      // new default for Phase 4+ requests
+  IN_PROGRESS // at least one donor has responded
+  FULFILLED
+  CANCELLED
+  EXPIRED     // past expiresAt with no fulfilment
+}
+
+enum VerificationType {
+  ID_PROOF
+  BLOOD_GROUP_PROOF
+  MEDICAL_SCREENING
+  LICENSE
+}
+
+enum VerificationStatus {
+  NOT_SUBMITTED
+  UPLOADED
+  AUTO_VERIFICATION_PASSED
+  AUTO_VERIFICATION_FAILED
+  PENDING_REVIEW
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum DonorStatus {
+  NEVER_DONATED   // No attempt made yet
+  PENDING_REVIEW  // All eligibility checks passed; awaiting registration click
+  ACTIVE          // Registered eligible donor
+  DEFERRED        // Temporarily ineligible (cooldown, procedure, etc.)
+  INELIGIBLE      // Permanently/long-term ineligible (medical condition)
+}
+
+enum DonorResponseStatus {
+  ACCEPTED
+  DECLINED
+}
+
+enum BloodBankVerificationStatus {
+  PENDING_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum InventoryStatus {
+  ACTIVE
+  EXPIRED
+  RESERVED
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+  EXPO
+  UNKNOWN
+}
+
+model User {
+  id          String   @id @default(uuid())
+  phone       String   @unique
+  email       String?  @unique
+  passwordHash String?
+  name        String
+  gender      String?
+  avatarUrl    String?
+  profileEmoji String?   // Phase 7: user-chosen emoji avatar
+  location     String?
+
+  role        UserRole @default(USER)
+  isDonor     Boolean  @default(false)
+  isRecipient Boolean  @default(true)
+
+  // Phase 2 additions
+  firebaseUid   String?  @unique
+  tokenVersion  Int      @default(0)
+  emailVerified Boolean  @default(false)
+
+  // Donor fields
+  bloodGroup        String?
+  lastDonationDate  DateTime?
+  totalDonations    Int      @default(0)
+  willingToDonate   Boolean  @default(false)
+  donorVerificationStatus DonorVerificationStatus @default(PENDING)
+  medicalCertificateUrl   String?
+
+  // Location
+  latitude   Float?
+  longitude  Float?
+  address    String?
+  city       String?
+  state      String?
+  pincode    String?
+
+  // Emergency contact
+  emergencyContactName     String?
+  emergencyContactPhone    String?
+  emergencyContactRelation String?
+
+  // Phase 6 — blood bank ownership
+  ownedBloodBanks BloodBank[] @relation("OwnedBloodBanks")
+
+  // Device
+  deviceToken  String?
+  lastLoginAt  DateTime?
+  lastActiveAt DateTime?
+
+  // Phase 3 verification flags
+  idVerified           Boolean  @default(false)
+  bloodGroupVerified   Boolean  @default(false)
+  medicalVerified      Boolean  @default(false)
+
+  // Phase 4 donor eligibility
+  isDonorEligible        Boolean   @default(false)
+  donorEligibleSince     DateTime?
+  donorEligibilityExpiry DateTime?
+
+  // Phase 5 stateful donor status
+  donorStatus          DonorStatus @default(NEVER_DONATED)
+  deferralDate         DateTime?
+  deferralReason       String?
+  nextEligibleDate     DateTime?
+  eligibilityCheckedAt DateTime?
+  reminderSet          Boolean @default(false)
+
+  // Phase 5E — phone verification and Firebase password reset
+  phoneVerified          Boolean   @default(false)
+  phoneVerifiedAt        DateTime?
+  passwordResetTokenHash String?
+  passwordResetExpiresAt DateTime?
+
+  // CSV import tracking — set to true by importLiveDonors.js / importDonors.js
+  importedDonor Boolean   @default(false)
+  age           Int?
+  importedAt    DateTime?
+
+  isActive  Boolean  @default(true)
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  documents             UserDocument[]
+  bloodRequests         BloodRequest[]
+  donations             Donation[]
+  notifications         Notification[]
+  otpCodes              OtpCode[]
+  sessions              Session[]
+  verifications         Verification[]      @relation("UserVerifications")
+  reviewedVerifications Verification[]      @relation("ReviewerVerifications")
+  fraudAlerts           FraudAlert[]
+  healthScreening       HealthScreening?
+  donorResponses        DonorRequestResponse[]
+  deviceTokens          UserDeviceToken[]
+  requesterConversations Conversation[]     @relation("RequesterConversations")
+  donorConversations     Conversation[]     @relation("DonorConversations")
+  sentMessages           Message[]          @relation("SentMessages")
+  targetedRequests       BloodRequest[]     @relation("TargetedDonorRequests")
+
+  @@index([phone])
+  @@index([bloodGroup, willingToDonate])
+  @@index([latitude, longitude])
+  @@index([donorStatus])                       // donor discovery: filter by status
+  @@index([city])                              // donor discovery: city-scoped search
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique
+  deviceInfo   Json?
+  ipAddress    String?
+  expiresAt    DateTime
+  lastActiveAt DateTime @default(now())
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([refreshToken])
+}
+
+model UserDocument {
+  id           String   @id @default(uuid())
+  userId       String
+  documentType String
+  url          String
+  fileName     String
+  mimeType     String
+  status       String   @default("uploaded")
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, documentType])
+}
+
+model BloodBank {
+  id                 String   @id @default(uuid())
+  name               String
+
+  // Phase 6 owner
+  ownerId            String?
+  licenseNumber      String?
+
+  // Legacy field kept for backward compat with seeded/admin-added banks
+  registrationNumber String?  @unique
+
+  contactPhone       String
+  email              String?
+  operatingHoursStart String?
+  operatingHoursEnd   String?
+  is24x7             Boolean  @default(false)
+
+  // Legacy stock JSON: {"A+": 10, "B+": 5, ...}
+  stockJson          String   @default("{}")
+
+  // Location (nullable to allow registration without GPS)
+  latitude  Float?
+  longitude Float?
+  address   String
+  city      String
+  state     String
+  pincode   String
+
+  // Phase 6 verification lifecycle
+  verificationStatus BloodBankVerificationStatus @default(PENDING_REVIEW)
+  rejectionReason    String?
+
+  // Legacy boolean kept for backward compat with existing records
+  isVerified Boolean  @default(false)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  owner         User?           @relation("OwnedBloodBanks", fields: [ownerId], references: [id])
+  inventory     BloodInventory[]
+  bloodRequests BloodRequest[]
+
+  @@index([latitude, longitude])
+  @@index([city])
+  @@index([verificationStatus])
+}
+
+model BloodInventory {
+  id          String          @id @default(uuid())
+  bloodBankId String
+  bloodGroup  String
+  units       Int             @default(0)
+  expiryDate  DateTime?
+  status      InventoryStatus @default(ACTIVE)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  bloodBank   BloodBank @relation(fields: [bloodBankId], references: [id], onDelete: Cascade)
+
+  @@index([bloodBankId, bloodGroup])
+  @@index([expiryDate])
+  @@index([status])
+}
+
+model BloodRequest {
+  id          String   @id @default(uuid())
+  requesterId String
+  bloodGroup  String
+  units       Int      @default(1)
+
+  patientName   String?
+  patientAge    Int?
+  patientGender String?
+
+  hospitalName      String
+  hospitalAddress   String
+  hospitalCity      String
+  hospitalLatitude  Float?
+  hospitalLongitude Float?
+  hospitalContact   String?
+  doctorName        String?
+  doctorContact     String?
+
+  emergencyLevel EmergencyPriority
+  status         RequestStatus              @default(OPEN)
+  verificationStatus RequestVerificationStatus @default(PENDING)
+
+  notes       String?
+  reason      String?
+  requiredBy  DateTime?
+  expiresAt   DateTime?
+  fulfilledAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Phase 6 — optional blood-bank association (entity-agnostic request)
+  bloodBankId String?
+
+  // Targeted donor — when set, only this donor is notified and can respond
+  targetedDonorId  String?
+
+  // Relations
+  requester      User                  @relation(fields: [requesterId], references: [id])
+  bloodBank      BloodBank?            @relation(fields: [bloodBankId], references: [id])
+  targetedDonor  User?                 @relation("TargetedDonorRequests", fields: [targetedDonorId], references: [id])
+  donations      Donation[]
+  notifications  Notification[]
+  documents      RequestDocument[]
+  donorResponses DonorRequestResponse[]
+  conversations  Conversation[]
+
+  @@index([requesterId])                       // list requests by user
+  @@index([bloodBankId])                       // blood bank's own requests
+  @@index([bloodGroup, status])
+  @@index([emergencyLevel, status])
+  @@index([hospitalLatitude, hospitalLongitude])
+  @@index([createdAt])
+  @@index([targetedDonorId])
+}
+
+model RequestDocument {
+  id           String   @id @default(uuid())
+  requestId    String
+  documentType String
+  url          String
+  createdAt    DateTime @default(now())
+
+  request      BloodRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}
+
+model Donation {
+  id          String   @id @default(uuid())
+  donorId     String
+  requestId   String?
+  bloodGroup  String
+  units       Int      @default(1)
+  isVerified  Boolean  @default(false)
+  donationDate DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  donor        User         @relation(fields: [donorId], references: [id])
+  bloodRequest BloodRequest? @relation(fields: [requestId], references: [id])
+
+  @@index([donorId])
+  @@index([donationDate])
+}
+
+model Notification {
+  id               String   @id @default(uuid())
+  userId           String
+  title            String
+  body             String
+  notificationType String
+  relatedRequestId String?
+  data             String?
+  isRead           Boolean  @default(false)
+  isPushSent       Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bloodRequest BloodRequest? @relation(fields: [relatedRequestId], references: [id])
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model OtpCode {
+  id        String   @id @default(uuid())
+  userId    String
+  phone     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phone, used])
+}
+
+model Verification {
+  id               String             @id @default(uuid())
+  userId           String
+  verificationType VerificationType
+  status           VerificationStatus @default(NOT_SUBMITTED)
+
+  s3Key      String?
+  fileName   String?
+  fileType   String?
+  fileSize   Int?
+  uploadedAt DateTime?
+
+  autoCheckPassed  Boolean?
+  autoCheckResults Json?
+  fraudScore       Int      @default(0)
+  fraudFlags       Json?
+
+  reviewerId      String?
+  reviewedAt      DateTime?
+  reviewNotes     String?
+  rejectionReason String?
+
+  documentDate DateTime?
+  expiresAt    DateTime?
+  isExpired    Boolean   @default(false)
+
+  resubmissionCount Int     @default(0)
+  previousVersionId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user        User         @relation("UserVerifications", fields: [userId], references: [id])
+  reviewer    User?        @relation("ReviewerVerifications", fields: [reviewerId], references: [id])
+  fraudAlerts FraudAlert[]
+
+  @@index([userId, verificationType])
+  @@index([status])
+  @@index([fraudScore])
+}
+
+model FraudAlert {
+  id             String    @id @default(uuid())
+  verificationId String
+  userId         String
+  alertType      String
+  severity       Int
+  description    String
+  metadata       Json?
+  isResolved     Boolean   @default(false)
+  resolvedBy     String?
+  resolvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  verification Verification @relation(fields: [verificationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([verificationId])
+  @@index([userId])
+  @@index([isResolved])
+}
+
+model HealthScreening {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  screeningDate DateTime @default(now())
+
+  // Physical measurements
+  height        Float?
+  weight        Float?
+  bmi           Float?
+  bloodPressure String?
+  hemoglobinLevel Float?
+  pulseRate     Int?
+  temperature   Float?
+
+  // Permanent disqualifying conditions
+  hasHeartDisease       Boolean @default(false)
+  hasDiabetes           Boolean @default(false)
+  hasHepatitis          Boolean @default(false)
+  hasHiv                Boolean @default(false)
+  hasTuberculosis       Boolean @default(false)
+  hasCancer             Boolean @default(false)
+  hasBleedingDisorder   Boolean @default(false)
+  hasSeizureDisorder    Boolean @default(false)
+  hasKidneyDisease      Boolean @default(false)
+  hasLiverDisease       Boolean @default(false)
+  hasRespiratoryDisease Boolean @default(false)
+  hasAutoimmuneDisease  Boolean @default(false)
+
+  // Temporary deferral conditions
+  hasRecentSurgery      Boolean   @default(false)
+  recentSurgeryDate     DateTime?
+  hasRecentTattoo       Boolean   @default(false)
+  recentTattooDate      DateTime?
+  hasRecentPiercing     Boolean   @default(false)
+  recentPiercingDate    DateTime?
+  hasRecentTravel       Boolean   @default(false)
+  recentTravelCountry   String?
+  hasRecentVaccination  Boolean   @default(false)
+  recentVaccinationDate DateTime?
+
+  // Blood donation specific
+  hasDonatedBefore      Boolean @default(false)
+  hasAdverseReaction    Boolean @default(false)
+  adverseReactionDetail String?
+  isOnMedication        Boolean @default(false)
+  medicationDetails     String?
+  isPregnant            Boolean @default(false)
+  isBreastfeeding       Boolean @default(false)
+  hasConsumedAlcohol24h Boolean @default(false)
+  hasFever              Boolean @default(false)
+
+  // Computed
+  weightMeetsMinimum   Boolean @default(false)
+  screeningPassed      Boolean
+  disqualifyingFactors String?  // JSON array
+
+  reviewedBy String?
+  reviewedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([screeningPassed])
+}
+
+model DonorRequestResponse {
+  id        String              @id @default(uuid())
+  requestId String
+  donorId   String
+  response  DonorResponseStatus
+  message   String?
+
+  // Phase 4.4: donation proof (optional, donor-submitted)
+  proofImageUrl    String?
+  proofNote        String?
+  proofSubmittedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  request   BloodRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  donor     User         @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, donorId])
+  @@index([requestId])
+  @@index([donorId])
+}
+
+model UserDeviceToken {
+  id         String         @id @default(uuid())
+  userId     String
+  token      String
+  platform   DevicePlatform @default(UNKNOWN)
+  deviceId   String?
+  isActive   Boolean        @default(true)
+  lastSeenAt DateTime       @default(now())
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, token])
+  @@index([userId, isActive])
+}
+
+model Conversation {
+  id            String    @id @default(uuid())
+  requestId     String?              // null for bank direct conversations
+  requesterId   String
+  donorId       String
+  bankId        String?              // set for bank direct conversations
+  bankName      String?              // denormalized for UI title
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastMessageAt DateTime?
+
+  request   BloodRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  requester User         @relation("RequesterConversations", fields: [requesterId], references: [id])
+  donor     User         @relation("DonorConversations", fields: [donorId], references: [id])
+  messages  Message[]
+
+  @@unique([requestId, donorId])
+  @@index([requesterId])
+  @@index([donorId])
+  @@index([lastMessageAt])
+  @@index([bankId])
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String
+  senderId       String
+  body           String
+  createdAt      DateTime @default(now())
+  readAt         DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+// Phase 8: Security audit trail — append-only, never update or delete rows.
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  entityType String?
+  entityId   String?
+  ip         String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}

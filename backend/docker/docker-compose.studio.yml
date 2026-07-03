@@ -1,0 +1,16 @@
+# Studio override — exposes postgres port 5432 to the Windows host so Prisma Studio can connect.
+# Never used in production. Load alongside the prod compose only when running Studio locally.
+#
+# Usage:
+#   docker compose -f docker/docker-compose.prod.yml -f docker/docker-compose.studio.yml up -d postgres redis
+#   cd backend && npm run studio:local
+#
+# The prod DATABASE_URL (postgres:5432 inside Docker network) is unchanged.
+# .env.studio uses localhost:5432, which maps to this exposed port.
+
+version: '3.9'
+
+services:
+  postgres:
+    ports:
+      - '5432:5432'

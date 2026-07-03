@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 14.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://whacky-wriggly-brunch.ngrok-free.dev/v1"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://REPLACE_WITH_YOUR_PRODUCTION_BACKEND/v1"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://REPLACE_WITH_YOUR_PRODUCTION_BACKEND/v1"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "BloodLinkApp",
+    "slug": "BloodLinkApp",
+    "version": "1.0.0",
+    "scheme": "bloodlink",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "package": "com.simply.aksh.BloodLinkApp",
+    "googleServicesFile": "./google-services.json",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.simply.aksh.BloodLinkApp",
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-splash-screen",
+      "expo-secure-store",
+      "@react-native-firebase/app",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#E53935",
+          "sounds": []
+        }
+      ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ddf338ea-77f2-4099-b090-714852109b68"
+      }
+    },
+    "owner": "simply.aksh"
+  }
+}

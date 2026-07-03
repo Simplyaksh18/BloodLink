@@ -1,0 +1,70 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bloodlink-postgres
+    environment:
+      POSTGRES_USER: bloodlink
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bloodlink
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U bloodlink -d bloodlink']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: bloodlink-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    container_name: bloodlink-api
+    env_file:
+      - ../.env.development
+    environment:
+      DATABASE_URL: postgresql://bloodlink:bloodlink@postgres:5432/bloodlink_db
+      REDIS_URL: redis://redis:6379
+    ports:
+      - '3000:3000'
+    volumes:
+      - ../src:/app/src
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run dev
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: bloodlink-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@bloodlink.app
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  redis_data:

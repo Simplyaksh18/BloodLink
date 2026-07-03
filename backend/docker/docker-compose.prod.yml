@@ -1,0 +1,106 @@
+version: '3.9'
+
+# Production-like stack — no pgadmin, no source mounts, restart always.
+# Deploy with: docker compose -f docker/docker-compose.prod.yml up -d
+# Secrets must be injected via .env.production or platform env vars (never commit secrets).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bloodlink-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_USER: bloodlink
+      POSTGRES_PASSWORD: bloodlink123
+      POSTGRES_DB: bloodlink
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-bloodlink} -d ${POSTGRES_DB:-bloodlink}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    # Do NOT expose 5432 to host in production — API connects via internal network
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: bloodlink-redis-prod
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-changeme}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: bloodlink-api:latest
+    container_name: bloodlink-api-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      API_VERSION: v1
+      DATABASE_URL: postgresql://bloodlink:bloodlink123@postgres:5432/bloodlink
+      REDIS_URL: "redis://:changeme@redis:6379"
+      JWT_SECRET: +DIQu1DMgzwCX3mk8+rT9tuVNhqsRDx5cfhOLADtA14=
+      JWT_EXPIRES_IN: 7d
+      JWT_REFRESH_EXPIRES_IN: 30d
+      FIREBASE_PROJECT_ID: bloodlink-6c673
+      FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@bloodlink-6c673.iam.gserviceaccount.com
+      FIREBASE_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDPnGeqvk4VN2EE\nnzGV8g4/4L/PRdN5U0NPuJSLUyT21Oar9gFzvbHPrt+CRj0Bz75Zv+773tXA+6NK\nXn6vgrF9uxfdVZMlo9+Yoc5Kjzjgryi7nB6JM7iz5WR6YiIcHco3+hAcLUO+yOGk\nZOWkJGCMzlWHsz+r4YAV7AIoAtqoO46vNBPGE79O0WV8aWakoIP7/e3Je2m+4RUk\nNcAbe9wIeU56g10wgZhVcqbU9h5e6qPCKWyagKZNVI0JwsCS07kw3mGswj4es47n\nmCjp+Elc9DeweUvgCGkRUgDpnu/VrwhLAfiIHHJILETTqwHdcMYeeDtD+87gRpvR\nBCCofD1RAgMBAAECggEAL7IixeD9HtYvcYiiM2zd9bJsVpHX5OxqTyccZ0rFd/iO\n+wwkJsM6lbg67Jq22tLvi/5yiMZXrMOS7tu5NpirrrM8JxMJIHFexdnMgygWvNW4\n4asa/9HUWe32MMCZTgTRB52pNFP415yebC5q7JQX41lm4Gtfkh0XGFI1Z5xKQDIu\nci1s6Q4DHAnFxMxggxTPfwi6138RffhkvzwCRxreOP43H5NW6LI0xRwHyrF0z8g6\nshZVDK0HWpQjuVmciFgOa+StjManAQCei0/WlWWSgxKrdjW3XICNt7e6SDKr3ZyT\nMcekSk6ckmwv6E+pBQ8Z7P8SlwAcjlbfhghI+DwkvQKBgQD1VvlSC5/EKphdN00N\nmICexc3cXNxO/PqpmLcs0Na3RM99Eye4+qzlb6glgwLIL4ssCUwTUW48CAgYwTxk\nLn7re+VEJoqCVci5YDkCcGLjcfWwhVGduu7hlmKMgMb+Pii8RREmUpOqjJ0hSidx\nHd3H5a+mrQPIEeJkhUOizLqo7QKBgQDYocGrR9RLoeSs+L5z2DsBUwmwu8JBBH5w\ne2jam7vVKc8yZ5V6Is+nXlhT/I/dhi0im9PUPedo9sISKOKe5BtJZTpQXjXvWh2k\naa6u47aL/T5oRr5SDsa/MJusQ+5W94c8RKrOZJDlmy5i/N+MvYx9XRbIqO3S6gfo\n2Jpd6N0NdQKBgQCAdZDIF9QIt7DdphYPV1mJSNL4XhrwtN9eq9rFeXfjsADgYYY8\nAe1DmQo20flD7jj1zsxplQqeHip3I77GSd4k2NN7sp51jgsynSJcl5H/u2zEh5nr\nd7Sao85n+Qm4l71mjtdi9HvjIgsoIhay0MuOXkJxiEfhmxOqRGjctkvKJQKBgCwy\nnGvQpNyldB1iRqEl/avggDqhpBlVzGIwm4z2dxUfiZl0DsgzcABqvESuY7/Dj1Pf\nTRGha6Q7rA6+brYSPgr0bzhUcFacIS4ZLb2a0fSvv1rRDCV7xErfpPM5jNgLenju\nXZbsZ6+gwI8LnqR9S7uMEYjxBkyg2OpFvwDn8Km9AoGAfohYNjp1V0xKG8D0bTat\nHu+KoknadPQH8mxMzgoiOEOvibn5G9hEfmWXwLGIDn74wnp5CSlhO/l8Z1xuswKl\nb2caLL2V4iY1RrQcNXAJ7UddfHSZHrgPsz40QWom62/K3uBLJIcp8o+jJMlZKol5\n62uu+OB32yOUfWOtROgSm+E=\n-----END PRIVATE KEY-----\n"
+      AWS_ACCESS_KEY_ID: AKIAVI3LBLD7HJQ2F5FR
+      AWS_SECRET_ACCESS_KEY: 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
+      AWS_REGION: ap-south-1
+      AWS_S3_BUCKET: bloodlink-documents
+      GOOGLE_MAPS_API_KEY: AIzaSyCfdpl3qEBcu5A_VtzMOHFIsI98E3PYgr4
+      CORS_ORIGIN: '*'
+      LOG_LEVEL: debug
+      USE_DUMMY_DATA: true
+      SMS_PROVIDER: console
+      MSG91_API_KEY: 539677AcyCo1sxJ6a355d91P1
+      MSG91_SENDER_ID: BLNKLNK
+      OTP_EXPIRY_MINUTES: 10
+      MSG91_WIDGET_ID: 3666736e354e383932313030
+    ports:
+      - '${PORT:-3000}:3000'
+      - '5555:5555'   # Prisma Studio — REMOVE before public production deploy
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/v1/health || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge
