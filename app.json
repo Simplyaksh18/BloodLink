@@ -41,12 +41,10 @@
         }
       ],
       [
-        [
-          "expo-camera",
-          {
-            "cameraPermission": "Allow BloodLink to access your camera to scan codes."
-          }
-        ]
+        "expo-camera",
+        {
+          "cameraPermission": "Allow BloodLink to access your camera to scan codes."
+        }
       ]
     ],
     "extra": {
