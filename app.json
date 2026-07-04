@@ -39,6 +39,14 @@
           "color": "#E53935",
           "sounds": []
         }
+      ],
+      [
+        [
+          "expo-camera",
+          {
+            "cameraPermission": "Allow BloodLink to access your camera to scan codes."
+          }
+        ]
       ]
     ],
     "extra": {
