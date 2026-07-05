@@ -92,12 +92,23 @@ export const addBloodBank = asyncHandler(async (req: Request, res: Response) => 
 //   - registrationNumber starts with 'BB-'  (seed marker; createBank never sets it)
 //   - email ends with '@bloodlink.test'     (seed marker)
 // Public discovery (/blood-banks) is untouched.
+// Postgres 3-valued logic: `col LIKE 'x'` on NULL is NULL, and `NOT NULL`
+// is NULL → treated as non-match. Real user-created banks legitimately have
+// registrationNumber = NULL (only seed sets it) and often email = NULL, so a
+// plain NOT clause silently drops them. The OR-with-null form below is
+// null-safe and preserves the "exclude demo rows" intent.
 const REAL_BANKS_ONLY: Prisma.BloodBankWhereInput = {
   isActive: true,
   ownerId: { not: null },
-  NOT: [
-    { registrationNumber: { startsWith: 'BB-' } },
-    { email: { endsWith: '@bloodlink.test' } },
+  AND: [
+    { OR: [
+        { registrationNumber: null },
+        { registrationNumber: { not: { startsWith: 'BB-' } } },
+    ]},
+    { OR: [
+        { email: null },
+        { email: { not: { endsWith: '@bloodlink.test' } } },
+    ]},
   ],
 };
 

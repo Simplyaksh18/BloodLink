@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -89,8 +89,11 @@ export default function ActivityScreen() {
   const router   = useRouter();
   const { colors } = useTheme();
   const { bankId } = useLocalSearchParams<{ bankId?: string }>();
-  console.log('[BankTheme] screen: activity');
-  console.log('[BankRoute] received params: bankId=', bankId);
+  useEffect(() => {
+    console.log('[BankTheme] screen: activity');
+    console.log('[BankRoute] received params: bankId=', bankId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [loading, setLoading]     = useState(true);
   const [events, setEvents]       = useState<ActivityEvent[]>([]);

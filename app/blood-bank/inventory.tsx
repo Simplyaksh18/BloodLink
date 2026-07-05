@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -26,8 +26,11 @@ export default function InventoryScreen() {
   const insets = useSafeAreaInsets();
   const { bankId } = useLocalSearchParams<{ bankId?: string }>();
   const { colors } = useTheme();
-  console.log('[BankTheme] screen: inventory');
-  console.log('[BankRoute] received params: bankId=', bankId);
+  useEffect(() => {
+    console.log('[BankTheme] screen: inventory');
+    console.log('[BankRoute] received params: bankId=', bankId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [items, setItems]         = useState<InventoryItem[]>([]);
   const [loading, setLoading]     = useState(true);

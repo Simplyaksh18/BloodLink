@@ -1,12 +1,17 @@
 import { io, Socket } from 'socket.io-client';
 import Constants from 'expo-constants';
 
+// Must match apiClient.ts URL resolution exactly, else Socket.IO connects to
+// a different host than REST — cause of the connect_error / reconnect loop
+// seen in EAS builds where only EXPO_PUBLIC_API_URL is set.
 const API_BASE_URL: string =
+  (process.env.EXPO_PUBLIC_API_URL as string | undefined) ??
   (Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ??
   'https://whacky-wriggly-brunch.ngrok-free.dev/v1';
 
 // Strip /v1 (or any /vN) suffix — Socket.IO connects to the server root
 const SOCKET_URL = API_BASE_URL.replace(/\/v\d+\/?$/, '');
+console.log('[Socket] resolved URL:', SOCKET_URL);
 
 let socket: Socket | null = null;
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, ActivityIndicator, Alert, Modal, Image,
@@ -38,9 +38,12 @@ export default function BankManageScreen() {
   const { bankId } = useLocalSearchParams<{ bankId: string }>();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  console.log('[BankTheme] screen: bank-manage');
-  console.log('[BankRoute] received params: bankId=', bankId);
-  console.log('[SafeAreaFix] bottom inset:', insets.bottom);
+  useEffect(() => {
+    console.log('[BankTheme] screen: bank-manage');
+    console.log('[BankRoute] received params: bankId=', bankId);
+    console.log('[SafeAreaFix] bottom inset:', insets.bottom);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [bank, setBank]               = useState<BloodBank | null>(null);
   const [requests, setRequests]       = useState<BankRequest[]>([]);
@@ -338,19 +341,11 @@ export default function BankManageScreen() {
           <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.8)" />
         </TouchableOpacity>
 
-        {/* ── DEV VERIFY (development builds only; hidden in production) ── */}
-        {__DEV__ && vStatus !== 'VERIFIED' && (
-          <TouchableOpacity style={s.devBtn} onPress={handleDevVerify}>
-            <Ionicons name="shield-checkmark-outline" size={16} color="#6C3483" />
-            <Text style={s.devBtnText}>Dev: Mark Verified</Text>
-          </TouchableOpacity>
-        )}
-
         {/* ── INCOMING REQUESTS ── */}
         <Text style={[s.sectionTitle, { color: colors.muted }]}>Incoming Requests</Text>
         {requests.length === 0 ? (
           <View style={[s.emptyBox, { backgroundColor: colors.card }]}>
-            <Ionicons name="inbox-outline" size={36} color={colors.muted} />
+            <Ionicons name="file-tray-outline" size={36} color={colors.muted} />
             <Text style={[s.emptyText, { color: colors.muted }]}>No incoming bank requests yet.</Text>
           </View>
         ) : (
