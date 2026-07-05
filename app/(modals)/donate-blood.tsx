@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import { Colors } from '../../constants/Colors';
+import { useTheme } from '../../context/ThemeContext';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthStore } from '../../store/authStore';
@@ -288,6 +289,7 @@ function determineView(
 
 export default function DonateBloodScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const { user, setUser, updateUser } = useAuthStore();
   const { createChat } = useChatStore();
 
@@ -1099,19 +1101,19 @@ export default function DonateBloodScreen() {
     const isEstimated = resolved?.estimated ?? false;
 
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <Header title="Eligibility Status" />
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.heroSection}>
             <View style={[styles.iconCircle, { backgroundColor: '#FDEDEC' }]}>
               <Ionicons name={isCooldown ? 'timer-outline' : 'alert-circle-outline'} size={40} color="#E74C3C" />
             </View>
-            <Text style={styles.heroTitle}>{blockedTitle}</Text>
-            <Text style={styles.heroSub}>{blockedSub}</Text>
+            <Text style={[styles.heroTitle, { color: colors.text }]}>{blockedTitle}</Text>
+            <Text style={[styles.heroSub, { color: colors.muted }]}>{blockedSub}</Text>
           </View>
 
-          <View style={styles.reasonsCard}>
-            <Text style={styles.reasonsTitle}>{isCooldown ? 'Details' : 'Reasons'}</Text>
+          <View style={[styles.reasonsCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.reasonsTitle, { color: colors.text }]}>{isCooldown ? 'Details' : 'Reasons'}</Text>
             {blockReasons.map((r, i) => (
               <View key={i} style={styles.reasonRow}>
                 <Ionicons
@@ -1120,7 +1122,7 @@ export default function DonateBloodScreen() {
                   color={isCooldown ? '#E67E22' : '#E74C3C'}
                   style={{ marginTop: 2 }}
                 />
-                <Text style={styles.reasonText}>{r}</Text>
+                <Text style={[styles.reasonText, { color: colors.muted }]}>{r}</Text>
               </View>
             ))}
           </View>
@@ -1139,8 +1141,8 @@ export default function DonateBloodScreen() {
 
           {/* Countdown timer — always shown for DEFERRED, with fallback date */}
           {isCooldown && (
-            <View style={styles.countdownCard}>
-              <Text style={styles.countdownLabel}>
+            <View style={[styles.countdownCard, { backgroundColor: colors.card }]}>
+              <Text style={[styles.countdownLabel, { color: colors.muted }]}>
                 Time remaining{isEstimated ? ' (estimated)' : ''}
               </Text>
               {nextDate ? (
@@ -1149,7 +1151,7 @@ export default function DonateBloodScreen() {
                   onExpired={() => checkEligibility()}
                 />
               ) : (
-                <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 13, color: '#888', textAlign: 'center' }}>
+                <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 13, color: colors.muted, textAlign: 'center' }}>
                   Eligibility status being updated — check back in 24 hours.
                 </Text>
               )}
@@ -1178,29 +1180,10 @@ export default function DonateBloodScreen() {
             </View>
           )}
 
-          <TouchableOpacity style={styles.ghostBtn} onPress={() => checkEligibility()}>
+          <TouchableOpacity style={[styles.ghostBtn, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => checkEligibility()}>
             <Ionicons name="refresh-outline" size={16} color={Colors.light.primary} style={{ marginRight: 6 }} />
             <Text style={styles.ghostBtnText}>Check Again</Text>
           </TouchableOpacity>
-
-          {__DEV__ && (
-            <TouchableOpacity
-              style={{ marginTop: 12, padding: 10, borderRadius: 8, backgroundColor: '#FFF3E0', alignItems: 'center' }}
-              onPress={async () => {
-                try {
-                  await donorStatusService.devReset();
-                  console.log('[DevReset] State cleared — re-checking eligibility');
-                  await checkEligibility();
-                } catch (e) {
-                  console.warn('[DevReset] Failed:', e);
-                }
-              }}
-            >
-              <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 12, color: '#E65100' }}>
-                [DEV] Reset Donor State
-              </Text>
-            </TouchableOpacity>
-          )}
         </ScrollView>
       </SafeAreaView>
     );
@@ -1440,25 +1423,6 @@ export default function DonateBloodScreen() {
           <TouchableOpacity style={styles.ghostBtn} onPress={() => router.back()}>
             <Text style={styles.ghostBtnText}>Not Now</Text>
           </TouchableOpacity>
-
-          {__DEV__ && (
-            <TouchableOpacity
-              style={{ marginTop: 12, padding: 10, borderRadius: 8, backgroundColor: '#FFF3E0', alignItems: 'center' }}
-              onPress={async () => {
-                try {
-                  await donorStatusService.devReset();
-                  console.log('[DevReset] State cleared — re-checking eligibility');
-                  await checkEligibility();
-                } catch (e) {
-                  console.warn('[DevReset] Failed:', e);
-                }
-              }}
-            >
-              <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 12, color: '#E65100' }}>
-                [DEV] Reset Donor State
-              </Text>
-            </TouchableOpacity>
-          )}
         </ScrollView>
       </SafeAreaView>
     );

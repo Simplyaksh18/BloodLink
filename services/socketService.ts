@@ -28,8 +28,11 @@ export function connectSocket(token: string): Socket {
 
   console.log('[Socket] connecting');
 
+  // Use Socket.IO's default transport order (polling → upgrade to websocket).
+  // Forcing websocket-only caused the flood of "[Socket] connect error:
+  // websocket error" whenever the initial WS handshake failed (Render cold
+  // start, ngrok blip, corporate proxy) — no polling fallback was allowed.
   socket = io(SOCKET_URL, {
-    transports: ['websocket'],
     auth: { token },
     autoConnect: true,
     reconnectionAttempts: 5,
