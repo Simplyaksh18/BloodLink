@@ -26,6 +26,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY src/prisma/schema.prisma ./prisma/schema.prisma
+COPY --from=builder /app/src/prisma/migrations ./prisma/migrations
 
 # Copy prisma CLI from builder so the entrypoint can run db push
 COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma

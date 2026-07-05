@@ -200,6 +200,7 @@ model User {
   @@index([latitude, longitude])
   @@index([donorStatus])                       // donor discovery: filter by status
   @@index([city])                              // donor discovery: city-scoped search
+  @@index([importedDonor])                     // aligns with existing DB index User_importedDonor_idx
 }
 
 model Session {
