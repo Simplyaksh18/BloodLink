@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
+import { useTheme } from '../../context/ThemeContext';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { authService } from '../../services/authService';
@@ -39,6 +40,7 @@ export default function SignUpScreen() {
   const [verificationToken, setVerificationToken] = useState('');
 
   const router = useRouter();
+  const { colors } = useTheme();
   const setToken = useAuthStore((state) => state.setToken);
   const setUser = useAuthStore((state) => state.setUser);
 
@@ -147,7 +149,7 @@ export default function SignUpScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.content}
@@ -157,35 +159,35 @@ export default function SignUpScreen() {
             <View style={styles.logoContainer}>
               <Ionicons name="water" size={50} color="#fff" />
             </View>
-            <Text style={styles.appName}>BloodLink</Text>
-            <Text style={styles.subtitle}>Create your account.</Text>
+            <Text style={[styles.appName, { color: colors.text }]}>BloodLink</Text>
+            <Text style={[styles.subtitle, { color: colors.muted }]}>Create your account.</Text>
           </View>
 
-          <View style={styles.formCard}>
-            <Text style={styles.title}>Sign Up</Text>
+          <View style={[styles.formCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.title, { color: colors.text }]}>Sign Up</Text>
 
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-            <Text style={styles.label}>Full Name *</Text>
-            <View style={styles.inputWrapper}>
+            <Text style={[styles.label, { color: colors.text }]}>Full Name *</Text>
+            <View style={[styles.inputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 placeholder="John Doe"
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={colors.muted}
                 value={name}
                 onChangeText={setName}
               />
             </View>
 
-            <Text style={styles.label}>Mobile Number *</Text>
-            <View style={styles.inputWrapper}>
-              <View style={styles.countryCodeBox}>
-                <Text style={styles.countryCode}>+91</Text>
+            <Text style={[styles.label, { color: colors.text }]}>Mobile Number *</Text>
+            <View style={[styles.inputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={[styles.countryCodeBox, { backgroundColor: colors.border }]}>
+                <Text style={[styles.countryCode, { color: colors.text }]}>+91</Text>
               </View>
               <TextInput
-                style={styles.inputWithCode}
+                style={[styles.inputWithCode, { color: colors.text }]}
                 placeholder="98XXXXXXXX"
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={colors.muted}
                 keyboardType="phone-pad"
                 value={phone}
                 onChangeText={setPhone}
@@ -193,12 +195,12 @@ export default function SignUpScreen() {
               />
             </View>
 
-            <Text style={styles.label}>Email (Optional)</Text>
-            <View style={styles.inputWrapper}>
+            <Text style={[styles.label, { color: colors.text }]}>Email (Optional)</Text>
+            <View style={[styles.inputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 placeholder="john@example.com"
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={colors.muted}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -206,24 +208,24 @@ export default function SignUpScreen() {
               />
             </View>
 
-            <Text style={styles.label}>Password *</Text>
-            <View style={styles.inputWrapper}>
+            <Text style={[styles.label, { color: colors.text }]}>Password *</Text>
+            <View style={[styles.inputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 placeholder="Minimum 8 characters"
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={colors.muted}
                 secureTextEntry
                 value={password}
                 onChangeText={setPassword}
               />
             </View>
 
-            <Text style={styles.label}>Confirm Password *</Text>
-            <View style={styles.inputWrapper}>
+            <Text style={[styles.label, { color: colors.text }]}>Confirm Password *</Text>
+            <View style={[styles.inputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 placeholder="Re-enter password"
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={colors.muted}
                 secureTextEntry
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
@@ -244,7 +246,7 @@ export default function SignUpScreen() {
             </TouchableOpacity>
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account? </Text>
+              <Text style={[styles.footerText, { color: colors.muted }]}>Already have an account? </Text>
               <TouchableOpacity onPress={() => router.push('/(auth)/sign-in')}>
                 <Text style={styles.linkText}>Sign in now</Text>
               </TouchableOpacity>
@@ -256,32 +258,32 @@ export default function SignUpScreen() {
       {/* ── Role Selection Modal ── */}
       <Modal visible={roleStep} transparent animationType="slide" onRequestClose={() => setRoleStep(false)}>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>I am a...</Text>
-            <Text style={styles.modalSubtitle}>Choose your role. This helps us personalise your experience.</Text>
+          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>I am a...</Text>
+            <Text style={[styles.modalSubtitle, { color: colors.muted }]}>Choose your role. This helps us personalise your experience.</Text>
 
             <TouchableOpacity
-              style={[styles.roleCard, selectedRole === 'USER' && styles.roleCardActive]}
+              style={[styles.roleCard, { backgroundColor: colors.surface, borderColor: colors.border }, selectedRole === 'USER' && styles.roleCardActive]}
               onPress={() => setSelectedRole('USER')}
               activeOpacity={0.8}
             >
               <Text style={styles.roleEmoji}>🩸</Text>
               <View style={styles.roleCardInfo}>
-                <Text style={[styles.roleCardTitle, selectedRole === 'USER' && styles.roleCardTitleActive]}>Donor / Recipient</Text>
-                <Text style={styles.roleCardSub}>Donate blood or request blood during emergencies</Text>
+                <Text style={[styles.roleCardTitle, { color: colors.text }, selectedRole === 'USER' && styles.roleCardTitleActive]}>Donor / Recipient</Text>
+                <Text style={[styles.roleCardSub, { color: colors.muted }]}>Donate blood or request blood during emergencies</Text>
               </View>
               {selectedRole === 'USER' && <Ionicons name="checkmark-circle" size={22} color={Colors.light.primary} />}
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.roleCard, selectedRole === 'BLOOD_BANK' && styles.roleCardActive]}
+              style={[styles.roleCard, { backgroundColor: colors.surface, borderColor: colors.border }, selectedRole === 'BLOOD_BANK' && styles.roleCardActive]}
               onPress={() => setSelectedRole('BLOOD_BANK')}
               activeOpacity={0.8}
             >
               <Text style={styles.roleEmoji}>🏥</Text>
               <View style={styles.roleCardInfo}>
-                <Text style={[styles.roleCardTitle, selectedRole === 'BLOOD_BANK' && styles.roleCardTitleActive]}>Blood Bank</Text>
-                <Text style={styles.roleCardSub}>Manage your blood bank, inventory and incoming requests</Text>
+                <Text style={[styles.roleCardTitle, { color: colors.text }, selectedRole === 'BLOOD_BANK' && styles.roleCardTitleActive]}>Blood Bank</Text>
+                <Text style={[styles.roleCardSub, { color: colors.muted }]}>Manage your blood bank, inventory and incoming requests</Text>
               </View>
               {selectedRole === 'BLOOD_BANK' && <Ionicons name="checkmark-circle" size={22} color={Colors.light.primary} />}
             </TouchableOpacity>
@@ -296,7 +298,7 @@ export default function SignUpScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.cancelBtn} onPress={() => setRoleStep(false)}>
-              <Text style={styles.cancelText}>← Back</Text>
+              <Text style={[styles.cancelText, { color: colors.muted }]}>← Back</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -305,19 +307,19 @@ export default function SignUpScreen() {
       {/* ── OTP Verification Modal ── */}
       <Modal visible={otpStep} transparent animationType="slide" onRequestClose={() => setOtpStep(false)}>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Verify Phone</Text>
-            <Text style={styles.modalSubtitle}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Verify Phone</Text>
+            <Text style={[styles.modalSubtitle, { color: colors.muted }]}>
               Enter the 6-digit OTP sent to +91 {phone}
             </Text>
 
             {otpError ? <Text style={styles.errorText}>{otpError}</Text> : null}
 
-            <View style={[styles.inputWrapper, { marginTop: 16 }]}>
+            <View style={[styles.inputWrapper, { marginTop: 16, backgroundColor: colors.surface, borderColor: colors.border }]}>
               <TextInput
-                style={[styles.input, styles.otpInput]}
+                style={[styles.input, styles.otpInput, { color: colors.text }]}
                 placeholder="6-digit OTP"
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={colors.muted}
                 keyboardType="number-pad"
                 maxLength={6}
                 value={otp}
@@ -343,14 +345,14 @@ export default function SignUpScreen() {
             </TouchableOpacity>
 
             <View style={styles.otpFooter}>
-              <Text style={styles.footerText}>Didn't receive OTP? </Text>
+              <Text style={[styles.footerText, { color: colors.muted }]}>Didn't receive OTP? </Text>
               <TouchableOpacity onPress={handleResendOtp}>
                 <Text style={styles.linkText}>Resend</Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity style={styles.cancelBtn} onPress={() => setOtpStep(false)}>
-              <Text style={styles.cancelText}>← Change number</Text>
+              <Text style={[styles.cancelText, { color: colors.muted }]}>← Change number</Text>
             </TouchableOpacity>
           </View>
         </View>

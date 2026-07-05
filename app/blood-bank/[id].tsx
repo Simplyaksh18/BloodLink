@@ -209,7 +209,14 @@ export default function BloodBankDetailScreen() {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Live Inventory</Text>
             <View style={styles.inventoryGrid}>
               {inventory.map(item => (
-                <View key={item.id} style={[styles.invChip, item.lowStock && styles.invChipLow]}>
+                <View
+                  key={item.id}
+                  style={[
+                    styles.invChip,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                    item.lowStock && styles.invChipLow,
+                  ]}
+                >
                   <Text style={[styles.invChipBg, { color: colors.text }]}>{item.bloodGroup}</Text>
                   <Text style={[styles.invChipUnits, { color: colors.muted }]}>{item.units} units</Text>
                   {item.lowStock && (

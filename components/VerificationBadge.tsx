@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { DocVerificationStatus, DocVerificationType, RejectionDetail } from '../services/verificationService';
+import { useTheme } from '../context/ThemeContext';
 
 const TYPE_LABELS: Record<DocVerificationType, string> = {
   ID_PROOF: 'ID Proof',
@@ -50,6 +51,7 @@ interface Props {
 
 export default function VerificationBadge({ type, status, rejectionDetails, canResubmit, onUpload, onResubmit }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const { colors } = useTheme();
   const config = getBadgeConfig(status);
   const isRejected = status === 'REJECTED' || status === 'AUTO_VERIFICATION_FAILED';
   const isNotSubmitted = status === 'NOT_SUBMITTED';
@@ -60,7 +62,7 @@ export default function VerificationBadge({ type, status, rejectionDetails, canR
     <View style={styles.container}>
       <View style={styles.row}>
         <View style={styles.labelCol}>
-          <Text style={styles.typeLabel}>{TYPE_LABELS[type]}</Text>
+          <Text style={[styles.typeLabel, { color: colors.text }]}>{TYPE_LABELS[type]}</Text>
         </View>
 
         <View style={[styles.badge, { backgroundColor: config.bg }]}>
