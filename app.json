@@ -45,6 +45,7 @@
       "expo-splash-screen",
       "expo-secure-store",
       "@react-native-firebase/app",
+      "@react-native-firebase/auth",
       [
         "expo-notifications",
         {
@@ -63,7 +64,8 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "static"
+            "useFrameworks": "static",
+            "forceStaticLinking": ["RNFBApp", "RNFBAuth"]
           }
         }
       ]
