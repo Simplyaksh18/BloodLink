@@ -9,11 +9,7 @@
     "userInterfaceStyle": "light",
     "owner": "simply.aksh",
     "sdkVersion": "54.0.0",
-    "platforms": [
-      "ios",
-      "android",
-      "web"
-    ],
+    "platforms": ["ios", "android", "web"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.simplyaksh.bloodlink",
@@ -61,6 +57,14 @@
         "expo-camera",
         {
           "cameraPermission": "Allow BloodLink to access your camera to scan codes."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
         }
       ]
     ],
