@@ -46,14 +46,6 @@
       "expo-secure-store",
       "@react-native-firebase/app",
       [
-        "@react-native-firebase/auth",
-        {
-          "ios": {
-            "applyOpenUrlFix": false
-          }
-        }
-      ],
-      [
         "expo-notifications",
         {
           "icon": "./assets/android-icon-monochrome.png",
