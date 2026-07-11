@@ -7,10 +7,23 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "package": "com.simply.aksh.BloodLinkApp",
-    "googleServicesFile": "./google-services.json",
+    "owner": "simply.aksh",
+    "sdkVersion": "54.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.simplyaksh.bloodlink",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "BloodLink uses your location to show nearby blood requests, compatible donors and blood banks.",
+        "NSPhotoLibraryUsageDescription": "BloodLink accesses your photo library so you can upload profile images, identity documents and donation proof.",
+        "NSCameraUsageDescription": "BloodLink uses the camera so you can capture verification documents and donation proof.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +34,11 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.simply.aksh.BloodLinkApp",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -52,7 +69,6 @@
       "eas": {
         "projectId": "ddf338ea-77f2-4099-b090-714852109b68"
       }
-    },
-    "owner": "simply.aksh"
+    }
   }
 }
