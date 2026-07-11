@@ -45,12 +45,14 @@
       "expo-splash-screen",
       "expo-secure-store",
       "@react-native-firebase/app",
-      "@react-native-firebase/auth",
-      {
-        "ios": {
-          "applyOpenUrlFix": false
+      [
+        "@react-native-firebase/auth",
+        {
+          "ios": {
+            "applyOpenUrlFix": false
+          }
         }
-      },
+      ],
       [
         "expo-notifications",
         {
