@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
+import { useTheme } from '../../context/ThemeContext';
 import { useRouter } from 'expo-router';
 import { donationService } from '../../services/bloodService';
 
@@ -15,6 +16,7 @@ function formatDate(isoString: string): string {
 
 export default function DonationHistoryScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,12 +34,12 @@ export default function DonationHistoryScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Donation History</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Donation History</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -51,8 +53,8 @@ export default function DonationHistoryScreen() {
             <View style={styles.iconCircle}>
               <Ionicons name="water-outline" size={60} color={Colors.light.primary} />
             </View>
-            <Text style={styles.emptyTitle}>No Donations Yet</Text>
-            <Text style={styles.emptyDesc}>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>No Donations Yet</Text>
+            <Text style={[styles.emptyDesc, { color: colors.muted }]}>
               You haven't made any blood donations through BloodLink yet. Start saving lives today!
             </Text>
             <TouchableOpacity style={styles.actionBtn} onPress={() => router.replace('/(modals)/donate-blood')}>
@@ -63,14 +65,14 @@ export default function DonationHistoryScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.listContent} showsVerticalScrollIndicator={false}>
           <View style={styles.listHeader}>
-            <Text style={styles.countText}>{history.length} donation{history.length !== 1 ? 's' : ''} recorded</Text>
+            <Text style={[styles.countText, { color: colors.muted }]}>{history.length} donation{history.length !== 1 ? 's' : ''} recorded</Text>
             <TouchableOpacity style={styles.donorCardBtn} onPress={() => router.push('/profile/donor-card' as any)}>
               <Ionicons name="card-outline" size={16} color={Colors.light.primary} />
               <Text style={styles.donorCardBtnText}>Donor Card</Text>
             </TouchableOpacity>
           </View>
           {history.map((item, index) => (
-            <View key={item.responseId || index} style={styles.historyCard}>
+            <View key={item.responseId || index} style={[styles.historyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={styles.cardLeft}>
                 <View style={styles.bloodDrop}>
                   <Ionicons name="water" size={28} color="#fff" />
@@ -78,10 +80,10 @@ export default function DonationHistoryScreen() {
                 </View>
               </View>
               <View style={styles.cardBody}>
-                <Text style={styles.cardDate}>{formatDate(item.donatedAt)}</Text>
-                <Text style={styles.cardHospital} numberOfLines={1}>{item.hospitalName ?? '—'}</Text>
+                <Text style={[styles.cardDate, { color: colors.text }]}>{formatDate(item.donatedAt)}</Text>
+                <Text style={[styles.cardHospital, { color: colors.muted }]} numberOfLines={1}>{item.hospitalName ?? '—'}</Text>
                 {item.proofNote && (
-                  <Text style={styles.cardRecipient} numberOfLines={1}>{item.proofNote}</Text>
+                  <Text style={[styles.cardRecipient, { color: colors.muted }]} numberOfLines={1}>{item.proofNote}</Text>
                 )}
               </View>
               <View style={styles.cardRight}>

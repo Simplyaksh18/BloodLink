@@ -832,28 +832,29 @@ export default function RequestScreen() {
         onRequestClose={() => { setProofModalRequestId(null); setProofNote(''); setProofPhotoUri(null); }}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { paddingBottom: Math.max(insets.bottom + 24, 36) }]}>
-            <Text style={styles.modalTitle}>Submit Donation Proof</Text>
-            <Text style={styles.modalSubtitle}>
+          <View style={[styles.modalCard, { backgroundColor: colors.card, paddingBottom: Math.max(insets.bottom + 24, 36) }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Submit Donation Proof</Text>
+            <Text style={[styles.modalSubtitle, { color: colors.muted }]}>
               Upload a proof photo (required) and add an optional note.
             </Text>
 
             {/* Photo picker */}
-            <TouchableOpacity style={styles.proofPhotoBox} onPress={handlePickProofPhoto}>
+            <TouchableOpacity style={[styles.proofPhotoBox, { borderColor: colors.border }]} onPress={handlePickProofPhoto}>
               {proofPhotoUri ? (
                 <Image source={{ uri: proofPhotoUri }} style={styles.proofPhotoPreview} resizeMode="cover" />
               ) : (
-                <View style={styles.proofPhotoPlaceholder}>
-                  <Ionicons name="camera-outline" size={28} color="#aaa" />
-                  <Text style={styles.proofPhotoLabel}>Upload proof photo</Text>
+                <View style={[styles.proofPhotoPlaceholder, { backgroundColor: colors.surface }]}>
+                  <Ionicons name="camera-outline" size={28} color={colors.muted} />
+                  <Text style={[styles.proofPhotoLabel, { color: colors.muted }]}>Upload proof photo</Text>
                   <Text style={styles.proofPhotoRequired}>Required</Text>
                 </View>
               )}
             </TouchableOpacity>
 
             <TextInput
-              style={[styles.input, { marginTop: 12, minHeight: 70, textAlignVertical: 'top' }]}
+              style={[styles.input, { marginTop: 12, minHeight: 70, textAlignVertical: 'top', backgroundColor: colors.inputBackground, color: colors.inputText, borderColor: colors.border }]}
               placeholder='Note (optional) — e.g., "I donated at City Hospital today"'
+              placeholderTextColor={colors.inputPlaceholder}
               multiline
               value={proofNote}
               onChangeText={setProofNote}

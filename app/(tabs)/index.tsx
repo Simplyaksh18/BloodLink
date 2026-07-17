@@ -318,9 +318,18 @@ export default function HomeScreen() {
           isDonorEligible: currentIsActiveDonor,
         };
 
-        const filtered = items.filter((r: any) =>
-          canDonorSeeRequest(donorCtx, r, { priorityFilter: pr }).include
-        );
+        const filtered = items.filter((r: any) => {
+          const compat = canDonorSeeRequest(donorCtx, r, { priorityFilter: pr }).include;
+          // After compatibility, enforce the dashboard chip: when a bloodGroup is
+          // selected, only requests with the exact same group pass. When "All" is
+          // selected (bg === null/undefined), everything compatible passes.
+          const exactMatch = !bg || r.bloodGroup === bg;
+          const included = compat && exactMatch;
+          console.log('[NearbyRequests] selectedBloodGroup:', bg ?? 'ALL',
+                      '| requestBloodGroup:', r.bloodGroup,
+                      '| included:', included);
+          return included;
+        });
         console.log('[NearbyRequests] after canDonorSeeRequest filter:', filtered.length);
         setEmergencyRequests(filtered);
       } else {

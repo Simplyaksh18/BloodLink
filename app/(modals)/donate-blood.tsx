@@ -944,11 +944,11 @@ export default function DonateBloodScreen() {
   // ─── Renders ──────────────────────────────────────────────────────────────────
 
   const Header = ({ title }: { title: string }) => (
-    <View style={styles.header}>
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <Ionicons name="close" size={24} color="#333" />
+    <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+      <TouchableOpacity style={[styles.backBtn, { backgroundColor: colors.surface }]} onPress={() => router.back()}>
+        <Ionicons name="close" size={24} color={colors.text} />
       </TouchableOpacity>
-      <Text style={styles.headerTitle}>{title}</Text>
+      <Text style={[styles.headerTitle, { color: colors.text }]}>{title}</Text>
       <View style={{ width: 40 }} />
     </View>
   );
@@ -1248,14 +1248,14 @@ export default function DonateBloodScreen() {
     // Show Verification Pending if docs have loaded and are not fully verified
     if (verificationOverall !== null && verificationOverall !== 'FULLY_VERIFIED') {
       return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
           <Header title="Donor Dashboard" />
           <ScrollView contentContainerStyle={styles.content}>
-            <View style={styles.donorPendingBanner}>
+            <View style={[styles.donorPendingBanner, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
               <Ionicons name="time-outline" size={24} color="#E67E22" />
               <View style={{ marginLeft: 12, flex: 1 }}>
                 <Text style={styles.donorPendingName}>Verification Pending</Text>
-                <Text style={styles.donorPendingExpiry}>
+                <Text style={[styles.donorPendingExpiry, { color: colors.muted }]}>
                   Complete document verification to become a fully verified donor.
                 </Text>
               </View>
@@ -1299,25 +1299,25 @@ export default function DonateBloodScreen() {
 
           {/* Stats row */}
           <View style={styles.statsRow}>
-            <View style={styles.statCard}>
+            <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={styles.statValue}>{totalDons}</Text>
-              <Text style={styles.statLabel}>Donations</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>Donations</Text>
             </View>
-            <View style={styles.statCard}>
+            <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={styles.statValue}>{livesSaved}</Text>
-              <Text style={styles.statLabel}>Lives Saved</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>Lives Saved</Text>
             </View>
-            <View style={styles.statCard}>
+            <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={styles.statValue}>{lastDon ? formatDate(lastDon) : '—'}</Text>
-              <Text style={styles.statLabel}>Last Donation</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>Last Donation</Text>
             </View>
           </View>
 
           {/* Reminder toggle (Fix 2.4) */}
-          <View style={styles.reminderToggleRow}>
+          <View style={[styles.reminderToggleRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.reminderToggleLabel}>Remind me when eligible</Text>
-              <Text style={styles.reminderToggleSub}>Get a notification when you can donate again</Text>
+              <Text style={[styles.reminderToggleLabel, { color: colors.text }]}>Remind me when eligible</Text>
+              <Text style={[styles.reminderToggleSub, { color: colors.muted }]}>Get a notification when you can donate again</Text>
             </View>
             <Switch
               value={Boolean(donorStatusData?.reminderSet)}
@@ -1378,9 +1378,9 @@ export default function DonateBloodScreen() {
             </>
           ) : (
             emergencyRequests.map(req => (
-              <View key={req.id} style={styles.requestCard}>
+              <View key={req.id} style={[styles.requestCard, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
                 <Text style={styles.requestBloodGroup}>{req.bloodGroup}</Text>
-                <Text style={styles.requestHospital}>{req.hospitalName}</Text>
+                <Text style={[styles.requestHospital, { color: colors.muted }]}>{req.hospitalName}</Text>
               </View>
             ))
           )}
